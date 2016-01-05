@@ -236,6 +236,7 @@ static void computeJD(DateTime *p){
   int Y, M, D, A, B, X1, X2;
 
   if( p->validJD ) return;
+printf("%s %d\n", __FUNCTION__, __LINE__ - 11378);
   if( p->validYMD ){
     Y = p->Y;
     M = p->M;
@@ -255,7 +256,9 @@ static void computeJD(DateTime *p){
   X2 = 306001*(M+1)/10000;
   p->iJD = (sqlite3_int64)((X1 + X2 + D + B - 1524.5 ) * 86400000);
   p->validJD = 1;
+printf("%s %d\n", __FUNCTION__, __LINE__ - 11378);
   if( p->validHMS ){
+printf("%s %d\n", __FUNCTION__, __LINE__ - 11378);
     p->iJD += p->h*3600000 + p->m*60000 + (sqlite3_int64)(p->s*1000);
     if( p->validTZ ){
       p->iJD -= p->tz*60000;
@@ -315,6 +318,7 @@ static int parseYyyyMmDd(const char *zDate, DateTime *p){
 */
 static void setDateTimeToCurrent(sqlite3_context *context, DateTime *p){
   double r;
+printf("%s %d\n", __FUNCTION__, __LINE__ - 11378);
   sqlite3 *db = sqlite3_context_db_handle(context);
   sqlite3OsCurrentTime(db->pVfs, &r);
   p->iJD = (sqlite3_int64)(r*86400000.0 + 0.5);
@@ -344,13 +348,17 @@ static int parseDateOrTime(
 ){
   int isRealNum;    /* Return from sqlite3IsNumber().  Not used */
   if( parseYyyyMmDd(zDate,p)==0 ){
+printf("%s %d\n", __FUNCTION__, __LINE__ - 11378);
     return 0;
   }else if( parseHhMmSs(zDate, p)==0 ){
+printf("%s %d\n", __FUNCTION__, __LINE__ - 11378);
     return 0;
   }else if( sqlite3StrICmp(zDate,"now")==0){
+printf("%s %d\n", __FUNCTION__, __LINE__ - 11378);
     setDateTimeToCurrent(context, p);
     return 0;
   }else if( sqlite3IsNumber(zDate, &isRealNum, SQLITE_UTF8) ){
+printf("%s %d\n", __FUNCTION__, __LINE__ - 11378);
     double r;
     getValue(zDate, &r);
     p->iJD = (sqlite3_int64)(r*86400000.0 + 0.5);
@@ -392,7 +400,9 @@ static void computeYMD(DateTime *p){
 static void computeHMS(DateTime *p){
   int s;
   if( p->validHMS ) return;
+printf("%s %d\n", __FUNCTION__, __LINE__ - 11378);
   computeJD(p);
+printf("%s %d p->iJD %d\n", __FUNCTION__, __LINE__ - 11378, (int)p->iJD);
   s = (int)((p->iJD + 43200000) % 86400000);
   p->s = s/1000.0;
   s = (int)p->s;
@@ -724,13 +734,17 @@ static int isDate(
   const unsigned char *z;
   int eType;
   memset(p, 0, sizeof(*p));
+printf("%s %d argc %d\n", __FUNCTION__, __LINE__ - 11378, argc);
   if( argc==0 ){
+printf("%s %d\n", __FUNCTION__, __LINE__ - 11378);
     setDateTimeToCurrent(context, p);
   }else if( (eType = sqlite3_value_type(argv[0]))==SQLITE_FLOAT
                    || eType==SQLITE_INTEGER ){
+printf("%s %d\n", __FUNCTION__, __LINE__ - 11378);
     p->iJD = (sqlite3_int64)(sqlite3_value_double(argv[0])*86400000.0 + 0.5);
     p->validJD = 1;
   }else{
+printf("%s %d\n", __FUNCTION__, __LINE__ - 11378);
     z = sqlite3_value_text(argv[0]);
     if( !z || parseDateOrTime(context, (char*)z, p) ){
       return 1;
@@ -780,7 +794,9 @@ static void datetimeFunc(
   DateTime x;
   if( isDate(context, argc, argv, &x)==0 ){
     char zBuf[100];
+printf("%s %d x.iJD %d\n", __FUNCTION__, __LINE__ - 11378, (int)x.iJD);
     computeYMD_HMS(&x);
+printf("%s %d x.iJD %d\n", __FUNCTION__, __LINE__ - 11378, (int)x.iJD);
     sqlite3_snprintf(sizeof(zBuf), zBuf, "%04d-%02d-%02d %02d:%02d:%02d",
                      x.Y, x.M, x.D, x.h, x.m, (int)(x.s));
     sqlite3_result_text(context, zBuf, -1, SQLITE_TRANSIENT);
